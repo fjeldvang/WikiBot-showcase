@@ -12,6 +12,7 @@ Currently only immediately usable with Ollama, but is planned to have an univers
 
 ## Table of Contents
 
+- [Showcase](#showcase)
 - [Features](#features)
 - [Stack](#stack)
 - [Prerequisites](#prerequisites)
@@ -27,6 +28,16 @@ Currently only immediately usable with Ollama, but is planned to have an univers
 
 ---
 
+## Showcase
+
+You can run this project to get a feel for the UI, but the core functionality, APIs and LLMs are not included. This is exclusively a showcase of the actual repository. Here are some image examples of the functionality and AI behavior
+
+![wb1](wb1.png)
+![wb2](wb2.png)
+![wb3](wb3.png)
+![wb4](wb4.png)
+
+---
 ## Features
 
 - **ChatGPT style UI**
