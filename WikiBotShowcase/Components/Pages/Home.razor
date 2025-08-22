@@ -1,0 +1,241 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<div class="topbar">
+  <div class="brand">
+    <span class="logo">
+      <img class="logo-img" src="img/rect-t.png" alt="WikiBot" />
+    </span>
+    <strong>WikiBot</strong>
+    <span class="badge-llama" title="Running Llama via Ollama">Built with Llama</span>
+  </div>
+
+  <div class="toggles">
+    <label class="toggle">
+      <input type="checkbox" @bind="_useWiki" />
+      <span>Use Wiki</span>
+    </label>
+    <label class="toggle">
+      <input type="checkbox" @bind="_usePdf" />
+      <span>Use PDFs</span>
+    </label>
+    <label class="toggle">
+      <span style="margin-right:.25rem;">Top-K</span>
+      <input type="number" @bind="_topK" min="1" max="12" class="tok" />
+    </label>
+
+    <!-- In showcase: omit real auth actions -->
+    <!--<a class="btn outline">Sign in</a>-->
+    <!--<button class="btn outline">Sign out</button>-->
+
+    <button class="btn outline" @onclick="ToggleDrawer">Knowledge</button>
+  </div>
+</div>
+
+<div class="chat-container">
+  <div class="messages" id="msgLog" @ref="_threadRef">
+    @if (_messages.Count == 0)
+    {
+      <div class="empty-state">
+        <h2>Ask anything</h2>
+        <p>WikiBot can use a baseline wiki and your uploaded PDFs, then answer with sources.</p>
+      </div>
+    }
+
+    @foreach (var m in _messages)
+    {
+      <div class="msg @(m.Role == "You" ? "you" : "bot")">
+        <div class="avatar">
+          @if (m.Role == "You") { <span>You</span> }
+          else { <img src="img/square-t.png" alt="Bot" /> }
+        </div>
+        <div class="bubble">
+          @if (m.IsThinking)
+          {
+            <div class="typing"><span></span><span></span><span></span></div>
+          }
+          else
+          {
+            @((MarkupString)FormatText(m.Text))
+            @if (m.Sources?.Any() == true)
+            {
+              <div class="sources">
+                @foreach (var s in m.Sources!)
+                {
+                  <a class="src-tag" href="#" title="@s.Preview">[@s.Source] @Shorten(s.Url)</a>
+                }
+              </div>
+            }
+          }
+        </div>
+      </div>
+    }
+
+    @if (_isIndexing || _isCrawling)
+    {
+      <div class="status-pill">
+        @if (_isIndexing) { <span>Indexing PDF…</span> }
+        @if (_isCrawling) { <span>Crawling wiki…</span> }
+        <div class="spinner"></div>
+      </div>
+    }
+  </div>
+
+  <div class="composer">
+    <textarea class="prompt"
+              @ref="_promptRef"
+              @bind="_question"
+              @bind:event="oninput"
+              placeholder="Ask a question… (Enter to send, Shift+Enter for a new line)"
+              rows="1"></textarea>
+    <button class="btn primary" @onclick="Ask" disabled="@_isAsking">Send</button>
+  </div>
+
+  <div class="ai-disclaimer" role="note" aria-live="polite">
+    This assistant uses AI and can make mistakes. Verify important information and consult the cited sources.
+  </div>
+</div>
+
+<!-- Knowledge drawer (UI only in showcase) -->
+<div class="drawer @(_drawerOpen ? "open" : "")">
+  <div class="drawer-header">
+    <div class="title">Knowledge</div>
+    <button class="btn icon" @onclick="ToggleDrawer" title="Close">✕</button>
+  </div>
+
+  <div class="panel">
+    <h4>Index a PDF</h4>
+    <div class="uploader">
+      <InputFile OnChange="OnFileSelected" />
+      <button class="btn" disabled="@(!_fileSelected || _isIndexing)">
+        @(_isIndexing ? "Indexing…" : "Index PDF")
+      </button>
+    </div>
+    @if (!string.IsNullOrWhiteSpace(_uploadStatus))
+    {
+      <div class="note">@_uploadStatus</div>
+    }
+  </div>
+
+  <div class="panel">
+    <h4>Index website/wiki</h4>
+    <input class="text" @bind="_wikiRoot" placeholder="https://intranet.local/wiki" />
+    <div class="hstack">
+      <input class="num" type="number" @bind="_wikiMax" min="1" max="5000" />
+      <button class="btn" disabled="@_isCrawling">
+        @(_isCrawling ? "Crawling…" : "Crawl & Index")
+      </button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h4>Indexed documents</h4>
+      <div class="hstack">
+        <button class="btn outline" title="Refresh list">⟳</button>
+        <button class="btn danger sm" title="Delete all (respects filter)">🗑 Delete all</button>
+      </div>
+    </div>
+    <div class="hstack" style="margin-bottom:8px;">
+      <label class="toggle pill">
+        <input type="radio" name="src" checked />
+        <span>All</span>
+      </label>
+      <label class="toggle pill">
+        <input type="radio" name="src" />
+        <span>Wiki</span>
+      </label>
+      <label class="toggle pill">
+        <input type="radio" name="src" />
+        <span>PDF</span>
+      </label>
+    </div>
+
+    <p class="muted">No docs loaded (showcase).</p>
+  </div>
+</div>
+
+@if (_drawerOpen)
+{
+  <div class="backdrop" @onclick="ToggleDrawer"></div>
+}
+
+@code {
+  // Minimal models for the UI
+  class SourceTag { public string Source { get; set; } = ""; public string Url { get; set; } = ""; public string Preview { get; set; } = ""; }
+  class ChatMessage { public string Role { get; set; } = ""; public string Text { get; set; } = ""; public bool IsThinking { get; set; } public SourceTag[]? Sources { get; set; } }
+
+  IJSObjectReference? _keysModule;
+  DotNetObjectReference<object>? _dotNetRef;
+  ElementReference _promptRef;
+  ElementReference _threadRef;
+
+  bool _drawerOpen;
+  bool _useWiki = true;
+  bool _usePdf = true;
+  int  _topK = 6;
+
+  List<ChatMessage> _messages = new();
+  string _question = "";
+  bool _isAsking;
+
+  // Showcase-only local state
+  IBrowserFile? _selectedFile;
+  bool _fileSelected;
+  string _uploadStatus = "";
+  bool _isIndexing = false;
+
+  string _wikiRoot = "";
+  int _wikiMax = 50;
+  bool _isCrawling = false;
+
+  protected override async Task OnAfterRenderAsync(bool firstRender)
+  {
+    if (firstRender)
+    {
+      // In the public snippet we don’t import JS modules or call APIs.
+    }
+  }
+
+  public async ValueTask DisposeAsync()
+  {
+    if (_keysModule is not null) await _keysModule.DisposeAsync();
+    _dotNetRef?.Dispose();
+  }
+
+  static string FormatText(string text) => System.Net.WebUtility.HtmlEncode(text).Replace("\n", "<br/>");
+  static string Trunc(string s, int max = 72) => s.Length <= max ? s : s[..(max - 3)] + "…";
+  static string Shorten(string s, int max = 48) => Trunc(string.IsNullOrWhiteSpace(s) ? "(pdf upload)" : s, max);
+
+  void ToggleDrawer() => _drawerOpen = !_drawerOpen;
+
+  Task OnFileSelected(InputFileChangeEventArgs e)
+  {
+    _selectedFile = e.File;
+    _fileSelected = _selectedFile is not null;
+    _uploadStatus = "";
+    return Task.CompletedTask;
+  }
+
+  async Task Ask()
+  {
+    var text = _question?.Trim();
+    if (string.IsNullOrWhiteSpace(text) || _isAsking) return;
+
+    _messages.Add(new ChatMessage { Role = "You", Text = text });
+    _question = ""; _isAsking = true;
+
+    // Simulate thinking + canned answer for showcase
+    var thinking = new ChatMessage { Role = "WikiBot", IsThinking = true };
+    _messages.Add(thinking);
+    StateHasChanged();
+    await Task.Delay(500);
+
+    thinking.IsThinking = false;
+    thinking.Text = "This is a showcase answer. In production, this calls the RAG API and cites sources.";
+    thinking.Sources = new[] { new SourceTag { Source = "wiki", Url = "https://example/wiki/page", Preview = "…" } };
+    _isAsking = false;
+  }
+}

@@ -1,0 +1,49 @@
+.top-row {
+    min-height: 3.5rem;
+    background-color: #202123;
+    border-bottom: 1px solid #2f3136;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-brand {
+    color: #e5e7eb;
+    font-weight: 600;
+}
+
+    .navbar-brand:hover {
+        color: #fff;
+    }
+
+.navbar-toggler {
+    display: none;
+}
+
+.nav-scrollable {
+    padding: 12px 10px;
+}
+
+.nav-item {
+    font-size: 0.95rem;
+    padding: 6px 0;
+}
+
+    .nav-item ::deep .nav-link {
+        color: #cbd5e1;
+        background: none;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        height: 2.5rem;
+        padding: 0 10px;
+    }
+
+    .nav-item ::deep a.active {
+        background-color: #2f3136;
+        color: #fff;
+    }
+
+    .nav-item ::deep .nav-link:hover {
+        background-color: #2a2c31;
+        color: #fff;
+    }

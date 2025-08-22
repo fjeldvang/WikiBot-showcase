@@ -1,0 +1,177 @@
+﻿:root{
+    --bg:#f5f5f7;
+    --panel:#fff;
+    --text:#111;
+    --muted:#6b7280;
+    --line:#e5e7eb;
+    --bot-row:#f7f7fb;
+    --accent: #6f38dc;
+    --accent-2: #8243ff;
+    --danger:#e34b4b;
+    --shadow:0 1px 2px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.08);
+}
+
+/* Top bar */
+.topbar{
+    position:sticky;top:0;z-index:10;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:10px 14px;background:var(--panel);border-bottom:1px solid var(--line);
+    backdrop-filter:saturate(1.1) blur(4px);
+}
+.brand{display:flex;align-items:center;gap:8px;font-size:15px}
+.logo{font-size:18px}
+.toggles{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.toggle{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:13px}
+.tok{width:64px}
+
+/* Topbar brand logo (square, aligned with text) */
+.topbar .brand .logo {
+    display: inline-flex;
+    align-items: center;
+}
+
+.topbar .brand .logo-img {
+    height: 28px;        /* tweak this to taste (28–32 looks good) */
+    width: auto;         /* keep aspect ratio */
+    display: block;
+    object-fit: contain; /* no distortion */
+    border-radius: 0;    
+    vertical-align: middle;
+}
+
+/* Slightly larger on wide screens */
+@media (min-width: 1200px) {
+    .topbar .brand .logo-img { height: 32px; }
+}
+
+.logout-form { display: inline; margin-left: 6px; }
+
+/* Layout */
+.chat-container{
+    display:grid;grid-template-rows:1fr auto;min-height:calc(100vh - 56px);
+    background:var(--bg);
+}
+.messages{
+    max-width:860px;width:100%;margin:0 auto;padding:16px 16px 140px;
+}
+.empty-state{text-align:center;color:var(--muted);margin:28px auto}
+.empty-state h2{color:var(--text);margin-bottom:6px}
+
+/* Messages */
+.msg{
+    display:grid;grid-template-columns:44px 1fr;gap:14px;padding:16px 12px;
+    border-bottom:1px solid var(--line);background:#fff;
+}
+.msg.bot{background:var(--bot-row)}
+.avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff;background:#4b5563}
+.msg.you .avatar{background:var(--accent)}
+.bubble{line-height:1.6;color:var(--text)}
+.bubble p{margin:0 0 10px}
+.bubble code,.bubble pre{background:#f1f5f9;border-radius:6px;padding:2px 6px}
+
+/* Citations */
+.sources{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.src-tag{
+    display:inline-block;font-size:12px;line-height:1;padding:6px 8px;border-radius:999px;
+    border:1px solid var(--line);background:#fff;color:#0f172a;text-decoration:none;
+}
+.src-tag:hover{box-shadow:var(--shadow)}
+
+/* Typing */
+.typing{display:inline-flex;gap:6px;align-items:center}
+.typing span{width:8px;height:8px;border-radius:50%;background:#9ca3af;display:inline-block;animation:blink 1.2s infinite ease-in-out}
+.typing span:nth-child(2){animation-delay:.2s}
+.typing span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2;transform:translateY(0)}40%{opacity:1;transform:translateY(-2px)}}
+
+/* Status pill */
+.status-pill{
+    display:inline-flex;align-items:center;gap:10px;margin:16px 14px;padding:8px 12px;
+    border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--muted);width:fit-content;box-shadow:var(--shadow)
+}
+.spinner{width:16px;height:16px;border:2px solid #e5e7eb;border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Drawer (right) */
+.drawer{
+    position:fixed;right:0;top:56px;bottom:0;width:340px;padding:12px;background:var(--panel);
+    border-left:1px solid var(--line);transform:translateX(100%);transition:transform .2s ease;z-index:20;
+}
+.drawer.open{transform:translateX(0)}
+.drawer-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.panel{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:12px;background:#fff}
+.uploader{display:flex;gap:8px;align-items:center}
+.text{width:100%}
+.num{width:90px}
+.hstack{display:flex;gap:8px;align-items:center}
+.doc-list{list-style:none;padding:0;margin:8px 0 0}
+.doc-list li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px dashed var(--line)}
+.doc-meta{display:flex;flex-direction:column;gap:4px}
+.muted{color:var(--muted);font-size:12px}
+.note{color:var(--text);background:#f9fafb;border:1px solid var(--line);border-radius:8px;padding:8px;margin-top:8px;white-space:pre-wrap}
+.note.warn{background:#fff7f7;border-color:#ffe0e0}
+
+/* Backdrop for small screens (re-uses page background) */
+.backdrop{
+    position:fixed;inset:0;background:rgba(0,0,0,.2);backdrop-filter:blur(1px);z-index:15;display:none
+}
+.drawer.open + .backdrop,.backdrop.show{display:block}
+
+/* Composer */
+.composer{
+    position:sticky;bottom:0;left:0;right:0;display:grid;grid-template-columns:1fr auto;gap:10px;
+    padding:12px 16px;border-top:1px solid var(--line);
+    background:linear-gradient(to top, rgba(245,245,247,.98), rgba(245,245,247,.92));backdrop-filter:blur(6px)
+}
+.prompt{
+    resize:none;width:100%;max-height:240px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;outline:none;background:#fff;line-height:1.5
+}
+.prompt:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(16,163,127,.12)}
+.btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 14px;cursor:pointer;transition:all .15s ease}
+.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
+.btn:disabled{opacity:.6;cursor:default;box-shadow:none;transform:none}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.primary:hover{background:var(--accent-2);border-color:var(--accent-2)}
+.btn.outline{background:#fff}
+.btn.icon{padding:8px 10px}
+.btn.danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+.btn.sm{padding:6px 10px;border-radius:8px}
+
+/* Pills */
+.toggle.pill{border-radius:999px;padding:4px 8px}
+.toggle.pill input{margin-right:6px}
+
+/* Show avatar image without a colored background */
+.msg.bot .avatar {
+    background: transparent;
+}
+
+/* Make the image fill the avatar circle nicely */
+.avatar img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover; /* 'cover' if edge-to-edge crop better */
+    border-radius: 25%;
+}
+
+ .badge-llama{
+     margin-left:.5rem;
+     padding:.15rem .45rem;
+     font-size:.75rem;
+     border:1px solid #d0d0d0;
+     border-radius:6px;
+     line-height:1;
+     opacity:.9;
+     white-space:nowrap;
+ }
+.ai-disclaimer{
+    position:sticky;
+    margin:6px 0 0;
+    padding:4px 0 0;
+    font-size:.85rem;
+    color:#666;
+}
+@media (max-width: 640px){
+    .badge-llama{ display:inline-block; font-size:.7rem; }
+}
