@@ -30,7 +30,7 @@ Currently only immediately usable with Ollama, but is planned to have an univers
 
 ## Showcase
 
-You can run this project to get a feel for the UI, but the core functionality, APIs and LLMs are not included. This is exclusively a showcase of the actual repository. Here are some image examples of the functionality and AI behavior
+You can run this project to get a feel for the UI, but the core functionality, APIs and LLMs are not included. This is exclusively a showcase of the actual repository. The real product is soft-wired to be a Norwegian speaking bot, but has bilinguality when prompted in case any English users want to use the bot, as shown below. Here are some image examples of the actual functionality and AI behavior when configured to be a helper and GDPR specialist for a local business, using their documentation to reason: 
 
 ![wb1](wb1.png)
 ![wb2](wb2.png)
