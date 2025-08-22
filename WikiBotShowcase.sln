@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WikiBotShowcase", "WikiBotShowcase\WikiBotShowcase.csproj", "{C5612022-0595-450B-9B2A-AF3D273E1F5D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WikiBotShowcase", "WikiBotShowcase.csproj", "{C5612022-0595-450B-9B2A-AF3D273E1F5D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
