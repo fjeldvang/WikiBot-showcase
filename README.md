@@ -36,6 +36,7 @@ You can run this project to get a feel for the UI, but the core functionality, A
 ![wb2](wb2.png)
 ![wb3](wb3.png)
 ![wb4](wb4.png)
+![wb5](wb5.png)
 
 ---
 ## Features
